@@ -4,6 +4,40 @@ constructPopHistory <- function(N,t,r=rep(1,length(N))){
 
     rep(N,times=t)
 }
+returnPopHistFunc <- function(starting.sizes,epoch.boundaries,growth.rates=rep(1,length(starting.sizes)-1)){
+    if(!all(growth.rates==rep(1,length(starting.sizes)-1)))
+        stop('exponential growth not implemented yet')
+    eb <- c(0,epoch.boundaries)
+    popSize <- function(t){
+        for(i in 1:(length(eb)-1)){
+            if( eb[i] <=t & t < eb[i+1]){
+                return(starting.sizes[i])
+            } else if (eb[i+1]<=t){
+                return(starting.sizes[i+1])
+            }
+        }
+    }
+    return(popSize)
+}
+coalTimeDist <- function(N,eb,gr=NULL){
+    if(!is.null(gr))
+        stop('growth not implemented yet')
+
+    
+    
+}
+rescaleTimes <- function(ct,st,na){
+    ## ct = coalescent scale coalescent times
+    ## st = generations on coalescent time scale
+    ## na = population size in the ancient epoch
+    mt <- max(st) # max scaled coal time before ancient epoch
+    mg <- length(st) # number of generations until ancient epoch 
+    if(ct<mt){
+        sum(ct>st)+1
+    } else {
+        mg+(ct-mt)*2*na
+    }
+}
 coalTimeSims <- function(N,Nanc,reps=1000){
     ## get elapsed coalescent time per generation
     scaled.time <- cumsum(1/(2*N))
@@ -14,26 +48,35 @@ coalTimeSims <- function(N,Nanc,reps=1000){
     ## convert to generation timescale
     times <- sapply(
         scaled.cts,
-        function(CT,mt=max.time,mg=max.gens,na=Nanc){
-            if(CT<mt){
-                sum(CT>scaled.time)+1
-            } else {
-                mg+(mt-CT)*2*na
-            }
-        }
+        function(CT) rescaleTimes(CT,scaled.time,Nanc)
     )
     times
 }
-sizeHistoryPlot <- function(N,my.xlim){
+sizeHistoryPlot <- function(N,start.anc,Nanc,my.xlim){
     gens <- seq_along(N)
+    max.gen <- length(N)
     plot(
         gens,
         N,
         type='l',
         bty='n',
-        ylim=c(0,ceiling((max(N)+1)/2000))*2000,
+        lwd=2,
+        ylim=c(0,ceiling((max(N,Nanc)+1)/2000))*2000,
         xlim=my.xlim
     )
+    if(start.anc<max(gens)){
+        anc.times <- c(max.gen,my.xlim[2])
+        lines(
+            x=anc.times,
+            y=rep(Nanc,length(anc.times)),
+            lwd=2
+        )
+        lines(
+            x=rep(max.gen,2),
+            y=c(tail(N,1),Nanc),
+            lwd=2
+        )
+    }
 }
 coalTimePlot <- function(times,my.xlim){
     ##recover()
@@ -46,8 +89,8 @@ coalTimePlot <- function(times,my.xlim){
 }
 
 if(FALSE){
-    hi <- constructPopHistory(c(1000,10000),c(4000,100000))
-    coals <- coalTimeSims(hi,5000,reps=10000)
+    hi <- constructPopHistory(c(1000,1000),c(4000,100000))
+    coals <- coalTimeSims(hi,1000,reps=10000)
     max.coal <- max(coals)
     om <- round(log(max.coal,10),0)
     my.xlim <- c(0,10^om)
@@ -63,4 +106,5 @@ if(FALSE){
         coals,
         my.xlim=my.xlim
     )
+
 }

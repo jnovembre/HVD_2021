@@ -37,7 +37,7 @@ ui <- fluidPage(
             ),
             sliderInput(
                 inputId = "t2",
-                label = "Date of transition from middle to recent epoch:",
+                label = "Date of transition from ancient to middle epoch:",
                 min = 2000,
                 max = 20000,
                 value = 2000,
@@ -66,10 +66,9 @@ server <- function(input,output) {
     ## })
     size.history <- reactive({
         constructPopHistory(N=c(input$N1,input$N2),t=c(input$t1,input$t2))
-        })
+    })
 
     coals <- reactive({
-        recover()
         coalTimeSims(N=size.history(),Nanc=input$Nanc,reps=input$reps)
     })
 
@@ -80,11 +79,11 @@ server <- function(input,output) {
         ## c(0,10^round(log(max(coals()),10),0))
     })
 
-    #print(my.xlim())
-
     output$sizeHistoryPlot <- renderPlot(
         sizeHistoryPlot(
             size.history(),
+            start.anc=input$t2,
+            Nanc=input$Nanc,
             my.xlim=my.xlim()
         )
     )
