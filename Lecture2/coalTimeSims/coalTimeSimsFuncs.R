@@ -4,8 +4,8 @@ constructPopHistory <- function(N,t,r=rep(1,length(N))){
 
     rep(N,times=t)
 }
-returnPopHistFunc <- function(starting.sizes,epoch.boundaries,growth.rates=rep(1,length(starting.sizes)-1)){
-    if(!all(growth.rates==rep(1,length(starting.sizes)-1)))
+returnPopHistFunc <- function(starting.sizes,epoch.boundaries,growth.rates=NULL){
+    if(!is.null(growth.rates))
         stop('exponential growth not implemented yet')
     eb <- c(0,epoch.boundaries)
     popSize <- function(t){
@@ -19,10 +19,12 @@ returnPopHistFunc <- function(starting.sizes,epoch.boundaries,growth.rates=rep(1
     }
     return(popSize)
 }
-coalTimeDist <- function(N,eb,gr=NULL){
+coalTimeDist <- function(N,boundaries,gr=NULL){
     if(!is.null(gr))
         stop('growth not implemented yet')
 
+    recover()
+    popSize <- returnPopHistFunc(N,boundaries,gr)
     
     
 }
