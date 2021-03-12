@@ -1,3 +1,6 @@
 *.raw
 *.png
 *.pdf
+*.R~
+*.R#
+*figures*
