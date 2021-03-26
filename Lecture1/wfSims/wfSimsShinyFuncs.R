@@ -1,11 +1,11 @@
-source('wfSimFuncs.R')
+source('wfSimsFuncs.R')
 ui <- fluidPage(
-    titlePanel("Wright-Fisher Sims"),
+    titlePanel("Wright-Fisher Simulations"),
     sidebarLayout(
         sidebarPanel(
             sliderInput(
                 inputId = "N",
-                label = "Population Size:",
+                label = "Diploid Population Size:",
                 min = 100,
                 max = 10000,
                 value = 100,
@@ -23,19 +23,18 @@ ui <- fluidPage(
                 inputId = "reps",
                 label = "Number of Replicates:",
                 min = 10,
-                max = 100,
+                max = 1000,
                 value = 100,
                 step=10
             ),
             sliderInput(
                 inputId = "p0",
                 label = "Starting Frequency:",
-                min = 1/100,
-                max = 99/100,
+                min = 1/200,
+                max = 199/200,
                 value = 0.3,
-                step=0.01
+                step=0.005
             )
-                                        #actionButton("onOff", "Condition")
         ),
         mainPanel(
             plotOutput("freqPlot",height='600px'),
