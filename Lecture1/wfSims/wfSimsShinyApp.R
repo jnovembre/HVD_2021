@@ -1,3 +1,3 @@
 require(shiny)
-source('wfSimShinyFuncs.R')
+source('wfSimsShinyFuncs.R')
 shinyApp(ui=ui,server=server)

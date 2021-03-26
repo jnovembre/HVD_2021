@@ -1,4 +1,4 @@
-source('wfSimsFuncs.R')
+source('wfSimFuncs.R')
 ui <- fluidPage(
     titlePanel("Wright-Fisher Sims"),
     sidebarLayout(
@@ -7,8 +7,8 @@ ui <- fluidPage(
                 inputId = "N",
                 label = "Population Size:",
                 min = 100,
-                max = 1000,
-                value = 500,
+                max = 10000,
+                value = 100,
                 step=10
             ),
             sliderInput(
@@ -26,68 +26,44 @@ ui <- fluidPage(
                 max = 100,
                 value = 100,
                 step=10
+            ),
+            sliderInput(
+                inputId = "p0",
+                label = "Starting Frequency:",
+                min = 1/100,
+                max = 99/100,
+                value = 0.3,
+                step=0.01
             )
-            #actionButton("onOff", "Condition")
+                                        #actionButton("onOff", "Condition")
         ),
         mainPanel(
-            plotOutput("simPlot",height='600px'),
+            plotOutput("freqPlot",height='600px'),
+            plotOutput("hetPlot",height='600px'),
         )
     )
 )
 server <- function(input,output) {
 
-    ## gen <- reactive({
-    ##     rnorm(n=10000,0,input$h2)
-    ## })
     sims <- reactive({
-        wfBinom(N=input$N, ngens=input$ngens=150, reps=input$reps)
+        wfBinom(N=input$N, ngens=input$ngens, reps=input$reps, p0=input$p0)
     })
 
-    ## env <- reactive({
-    ##     rnorm(n=10000,0,1-input$h2)
-    ## })
-
-    ## hist.gens <- reactive({
-    ##     rnorm(n=10000,input$h2*input$mp_phen,input$h2*(1-input$h2))
-    ## })
-
-    ## hist.envs <- reactive({
-    ##     rnorm(n=10000,(1-input$h2)*input$mp_phen,input$h2*(1-input$h2))
-    ## })
-
-    ## xlims.scat <- reactive({
-    ##     return(c(-2.5,2.5))
-    ## })
-    ## ylims.scat <- reactive({
-    ##     return(c(-2,2))
-    ## })
-
-    ## xlims.gen <- reactive({
-    ##     return(c(-2,2))
-    ## })
-
-    ## xlims.env <- reactive({
-    ##     return(c(-2,2))
-    ## })
-
-    ## cex.axes <- reactive({
-    ##     return(1.8)
-    ## })
-
-    ## x.label <- reactive({
-    ##     return('Genetic Component')
-    ## })
-
-    ## y.label <- reactive({
-    ##     return('Environmental Component')
-    ## })
-
-    output$simPlot <- renderPlot(
-        simPlot(
+    output$freqPlot <- renderPlot(
+        freqPlot(
             sims(),
-            input$ngens
+            input$ngens,
+            input$p0
         )
     )
 
-    ##
+    output$hetPlot <- renderPlot(
+        hetPlot(
+            sims(),
+            input$ngens,
+            input$p0,
+            input$N
+        )
+    )
+
 }

@@ -1,112 +1,193 @@
-constructPopHistory <- function(N,t,r=rep(1,length(N))){
-    if(!all(r==rep(1,length(N))))
-        stop('exponential growth not implemented yet')
+#### TODO:
 
-    rep(N,times=t)
-}
-returnPopHistFunc <- function(starting.sizes,epoch.boundaries,growth.rates=NULL){
-    if(!is.null(growth.rates))
-        stop('exponential growth not implemented yet')
-    eb <- c(0,epoch.boundaries)
-    popSize <- function(t){
-        for(i in 1:(length(eb)-1)){
-            if( eb[i] <=t & t < eb[i+1]){
-                return(starting.sizes[i])
-            } else if (eb[i+1]<=t){
-                return(starting.sizes[i+1])
-            }
-        }
-    }
-    return(popSize)
-}
-coalTimeDist <- function(N,boundaries,gr=NULL){
-    if(!is.null(gr))
-        stop('growth not implemented yet')
+#### fix integral of coalescent time distribution
+#### in ancient past so that it is exact rather than truncated at 20*Nanc
 
-    recover()
-    popSize <- returnPopHistFunc(N,boundaries,gr)
-    
-    
+### fix issue where lines cut off before edge of plot when population sizes are small
+
+
+
+
+constructPopHistory <- function(N,boundaries,gr=rep(0,length(N)-1)){
+    if(any(diff(boundaries)<0))
+        stop('boundaries must be strictly increasing')
+    eb <- boundaries
+    el <- diff(c(0,eb)) # get length of each epoch in generations
+    Nanc <- tail(N,1)
+    gt <- lapply(diff(c(0,eb)),function(TIME) rev(0:(TIME-1)))
+    gf <- exp(unlist(gt)*rep(gr,sapply(gt,length)))
+    size.history <- c(rep(head(N,-1),times=el)*gf,rep(Nanc,20*Nanc))
+    return(size.history)
 }
-rescaleTimes <- function(ct,st,na){
-    ## ct = coalescent scale coalescent times
-    ## st = generations on coalescent time scale
-    ## na = population size in the ancient epoch
-    mt <- max(st) # max scaled coal time before ancient epoch
-    mg <- length(st) # number of generations until ancient epoch 
-    if(ct<mt){
-        sum(ct>st)+1
-    } else {
-        mg+(ct-mt)*2*na
-    }
+coalTimeDist <- function(gN,nSamp=2){
+    coal.rates <- choose(nSamp,2)/(2*gN)
+    int.acc <- cumsum(coal.rates)
+    my.exp <- exp(-int.acc)
+    cdf <- 1 - my.exp
+    pdf <- coal.rates*my.exp
+    return(list(cdf=cdf,pdf=pdf))
 }
-coalTimeSims <- function(N,Nanc,reps=1000){
-    ## get elapsed coalescent time per generation
-    scaled.time <- cumsum(1/(2*N))
-    max.time <- max(scaled.time)
-    max.gens <- length(scaled.time)
-    ## sim times on natural coalescent timescale
-    scaled.cts <- rexp(reps)
-    ## convert to generation timescale
-    times <- sapply(
-        scaled.cts,
-        function(CT) rescaleTimes(CT,scaled.time,Nanc)
-    )
-    times
-}
-sizeHistoryPlot <- function(N,start.anc,Nanc,my.xlim){
+sizeHistoryPlot <- function(N,my.xlim,eb){
     gens <- seq_along(N)
-    max.gen <- length(N)
+    par(mar=c(5.1,5.1,4.1,2.1))
     plot(
         gens,
         N,
         type='l',
         bty='n',
         lwd=2,
-        ylim=c(0,ceiling((max(N,Nanc)+1)/2000))*2000,
-        xlim=my.xlim
+        ylim=c(0,ceiling((max(N)+1)/2000))*2000,
+        xlim=my.xlim,
+        xlab='',
+        ylab=''
     )
-    if(start.anc<max(gens)){
-        anc.times <- c(max.gen,my.xlim[2])
+    mtext(
+        'Generations Ago',
+        side=1,
+        line=2.8,
+        cex=2
+    )
+    mtext(
+        'Population Size',
+        side=2,
+        line=2.8,
+        cex=2
+    )
+}
+coalPDFPlot <- function(pdf,my.xlim,mean.coal.time,nSamp=2){
+    par(mar=c(5.1,5.1,4.1,2.1))
+    plot(
+        pdf,
+        type='l',
+        bty='n',
+        lwd=2,
+        xlim=my.xlim,
+        xlab='',
+        ylab=''
+    )
+    mtext(
+        'Generations Ago (T)',
+        side=1,
+        line=2.8,
+        cex=2
+    )
+    mtext(
+        'Density of coalescent times',
+        side=2,
+        line=2.8,
+        cex=2
+    )
+    ymax <- par('usr')[4]
+    abline(v=mean.coal.time,lty=1,lwd=2,col='blue')
+    x.seq <- seq(my.xlim[1],my.xlim[2])
+    eff.size.coal.dist <- exp(-x.seq/mean.coal.time)/mean.coal.time
+  ##  lines(x.seq,eff.size.coal.dist,col='blue',lwd=2,lty=3)
+    if(nSamp==2){
+        label <- "Average pairwise coalescent time"
+    } else {
+        label <- paste("Average time to first coalescent event in a sample of",nSamp)
+    }
+
+    text(
+        x=mean.coal.time*1.1,
+        y=0.8*ymax,
+        labels=label,
+        cex=1.8,
+        adj=0
+    )
+    text(
+        x=mean.coal.time*1.1,
+        y=0.75*ymax,
+        labels=paste(ceiling(mean.coal.time),'generations'),
+        cex=1.8,
+        adj=0
+    )
+}
+coalCDFPlot <- function(cdf,my.xlim,eb){
+    par(mar=c(5.1,5.1,4.1,2.1))
+    plot(
+        cdf,
+        type='l',
+        bty='n',
+        lwd=2,
+        xlim=my.xlim,
+        xlab='',
+        ylab=''
+    )
+    mtext(
+        'Generations Ago (T)',
+        side=1,
+        line=2.8,
+        cex=2
+    )
+    mtext(
+        'Probability of coalescing before time T',
+        side=2,
+        line=2.8,
+        cex=2
+    )
+    my.ys <- cdf[eb]
+    i=1
+    for(i in 1:2){
         lines(
-            x=anc.times,
-            y=rep(Nanc,length(anc.times)),
+            x=rep(eb[i],2),
+            y=c(0,my.ys[i]),
+            col='red',
+            lty=2,
             lwd=2
         )
         lines(
-            x=rep(max.gen,2),
-            y=c(tail(N,1),Nanc),
+            x=c(0,eb[i]),
+            y=rep(my.ys[i],2),
+            col='red',
+            lty=2,
             lwd=2
         )
     }
-}
-coalTimePlot <- function(times,my.xlim){
-    ##recover()
-    my.ecdf <- ecdf(times)
-    plot(
-        my.ecdf,
-        xlim=my.xlim
-    )
 
 }
-
 if(FALSE){
-    hi <- constructPopHistory(c(1000,1000),c(4000,100000))
-    coals <- coalTimeSims(hi,1000,reps=10000)
-    max.coal <- max(coals)
-    om <- round(log(max.coal,10),0)
-    my.xlim <- c(0,10^om)
 
+    ## script to make figures for in class exercise
 
+    N <- c(1000,1000,10000)
+    boundaries <- c(1000,5020)
+    gr <- c(0.004,0)
 
-    par(mfrow=c(2,1))
+    size.history <- constructPopHistory(N,boundaries,gr)
+    coal.dist <- coalTimeDist(size.hist)
+
+    my.xmax <- 40000
+    ## max.coal <- which.max(coal.dist$cdf>0.99)
+    ## om <- round(log(max.coal,10),0)
+    my.xlim <- c(0,my.xmax)
+
+    mean.time <- sum(1-coal.dist$cdf)
+    mean.rate <- 1/mean.time
+
     sizeHistoryPlot(
-        hi,
+        size.history,
         my.xlim=my.xlim
     )
-    coalTimePlot(
-        coals,
-        my.xlim=my.xlim
+
+    mult <- 2
+    png('figures/timeDistQuestionDensity.png',height=5*mult,width=8*mult,units='in',res=200)
+    coalPDFPlot(
+        coal.dist$pdf,
+        my.xlim=my.xlim,
+        mean.coal.time=mean.time,
+        nSamp=2
     )
+    dev.off()
+
+    png('figures/timeDistQuestionDistribution.png',height=5*mult,width=8*mult,units='in',res=200)
+    coalCDFPlot(
+        coal.dist$cdf,
+        my.xlim=my.xlim,
+        eb=boundaries
+    )
+    dev.off()
+
+
 
 }
