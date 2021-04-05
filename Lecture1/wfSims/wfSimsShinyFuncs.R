@@ -1,4 +1,4 @@
-source('wfSimFuncs.R')
+source('wfSimsFuncs.R')
 ui <- fluidPage(
     titlePanel("Wright-Fisher Sims"),
     sidebarLayout(
