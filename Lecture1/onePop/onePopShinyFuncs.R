@@ -179,3 +179,19 @@ server <- function(input,output) {
 
 
 }
+
+
+
+if(FALSE){
+
+
+    fspec <- reactive(
+        dadi$Demographics1D$bottlegrowth(
+                                c(1,10,0.05),
+                                list(as.integer(input$sampSize)),
+                                as.integer(1000)
+                            )[c(-1,-(input$sampSize+1))]
+    )
+
+
+}
