@@ -1,6 +1,6 @@
-library(ape) #this gives the plotting functions for phylogenies
-require(phyclust) #this contains ms (Hudsons program)
-source('plotCoalTrees.R')
+## library(ape) #this gives the plotting functions for phylogenies
+## require(phyclust) #this contains ms (Hudsons program)
+## source('plotCoalTrees.R')
 
 #### TODO:
 
