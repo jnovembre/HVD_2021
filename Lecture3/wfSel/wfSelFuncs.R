@@ -1,9 +1,12 @@
-getNextFreq <- function(p,w){
-    het <- p*(1-p)
-    g <- c(p^2,2*het,(1-p)^2)
+getNextFreq <- function(p.cur,w){
+    g <- sapply(p.cur,function(P)c(P^2,2*P*(1-P),(1-P)^2))
     wdiff <- rev(diff(rev(w)))
-    wbar <- sum(w*g)
-    p+het*(p*wdiff[1]+(1-p)*wdiff[2])/wbar
+    wbar <- t(g)%*%w
+    p.new <- numeric(length(p.cur))
+    for(j in seq_along(p.cur)){
+        p.new[j] <- p.cur[j] + g[2,j]/2*(p.cur[j]*wdiff[1] + (1-p.cur[j])*wdiff[2])/wbar[j]
+    }
+    p.new
 }
 getPStar <- function(w){
     (w[3]-w[2])/(w[1]+w[3]-2*w[2])
@@ -122,21 +125,37 @@ getDetTrajectory <- function(w,p.start){
 }
 
 wfBinomPosSel <- function(N,w,ngens,reps,p0,mu=0){
-    recover()
-    getNextFreq
+    ##recover()
+
     freq.list <- list()
     freq.list[[1]] <- rep(p0,reps)
     for(i in 1:(ngens-1)){
-        freq.list[[i+1]] <- rbinom(reps,2*N,freq.list[[i]])/(2*N)
+        ## if(FALSE){
+        ##     freq.list[[i+1]] <- ifelse(
+        ##         freq.list[[i]]>0|freq.list[[i]]<1,
+        ##         {
+        ##             p <- getNextFreq(freq.list[[i]],w)
+        ##             rbinom(reps,2*N,p)/(2*N)
+        ##         },
+        ##         freq.list[[i]]
+        ##     )
+        ## }
+        p <- getNextFreq(freq.list[[i]],w)
+        freq.list[[i+1]] <- rbinom(reps,2*N,p)/(2*N)
     }
-    my.freqs <- do.call(cbind,freq.list)
+    my.freqs <- do.call(rbind,freq.list)
     my.freqs
 }
 
 trajPlot <- function(traj,w){
-    ngens <- length(traj)
 
+    ngens <- length(traj)
     plot(type="n",y=c(0,1),x=c(0,ngens),xlab="Time, generations",ylab="Frequency, p", cex.lab=1.4,cex.axis=1.2,bty='n')
+
+
+}
+trajPlotLines <- function(traj,w){
+    ngens <- length(traj)
     lines(traj,col='black',lwd=2)
     if( w[1]>w[2] & w[3]>w[2] ){
         p.star <- getPStar(w)
@@ -147,36 +166,26 @@ trajPlot <- function(traj,w){
     }
 
 }
-
-
-het <- function(x) {
-    tbl <- table(x)
-    1 - sum((tbl/sum(tbl))^2)
-}
-hetPlot <- function(sims,ngens,p0,N){
-
-
-    plot(type="n",y=c(0,0.5),x=c(0,ngens),xlab="Time, generations",ylab="Heterozygosity", cex.lab=1.4,cex.axis=1.2)
-    hets <- 2*sims*(1-sims)
-
-    matplot(
-        t(hets),
-        type='l',
-        lty=1,
-        lwd=1,
-        col=adjustcolor('black',0.3),
-        add=T
-    )
-    lines(hets[1,],col='red',lwd=2)
-    lines(0:ngens,2*p0*(1-p0)*(1-1/(2*N))^(0:ngens),col="blue",lty=3,lwd=2)
-    lines(colMeans(hets),col='blue',lwd=2)
-
-}
-
 if(FALSE){
 
-    traj <- getDetTrajectory(c(0.99,1,0.99),1/200)
-    trajPlot(traj)
+    w <- c(1,0.99,0.98)
+    Ne <- 10000
+    p0 <- 0.05
 
+    traj <- getDetTrajectory(w,p0)
+    ngens <- length(traj)
+    reps <- 500
+
+    t1 <- Sys.time()
+    stoch.trajs <- wfBinomPosSel(Ne,w,ngens,reps,p0,mu=0)
+    t2 <- Sys.time()
+    t2-t1
+
+    mean.traj <- rowMeans(stoch.trajs)
+
+    trajPlot(traj,w)
+    matplot(stoch.trajs,type='l',lty=1,lwd=0.6,add=TRUE,col=adjustcolor("grey",0.4))
+    trajPlotLines(traj,w)
+    lines(mean.traj,col='darkgreen',lwd=2)
 
 }

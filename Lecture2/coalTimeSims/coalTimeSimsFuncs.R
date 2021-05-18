@@ -1,11 +1,12 @@
+## library(ape) #this gives the plotting functions for phylogenies
+## require(phyclust) #this contains ms (Hudsons program)
+## source('plotCoalTrees.R')
 #### TODO:
 
 #### fix integral of coalescent time distribution
 #### in ancient past so that it is exact rather than truncated at 20*Nanc
 
 ### fix issue where lines cut off before edge of plot when population sizes are small
-
-
 
 
 constructPopHistory <- function(N,boundaries,gr=rep(0,length(N)-1)){
@@ -189,5 +190,29 @@ if(FALSE){
     dev.off()
 
 
+
+    nsamples <- 10
+    ms_options <- '-T'
+    ret.ms <- ms(nsam = nsamples, opts = ms_options)
+    tree.anc <- read.my.tree(tree = ret.ms[3])
+    draw.my.tree(tree.anc)
+
+
+
+
+
+
+
+    layout(matrix(c(1,1,2,2),nrow=2),widths=c(1,1))
+    par(mar=c(5.1,4.1,4.1,0))
+    phylogram.plot(tree.anc$edge, nsamples, tree.anc$Nnode, xx, yy, horizontal, edge.color, edge.width, edge.lty)
+    res1 = plot.phylo(
+        tree.anc,
+        type="phylogram",
+        direction = "leftwards",
+        show.tip.label = F,
+        root.edge=TRUE
+    )
+    axis(1)
 
 }

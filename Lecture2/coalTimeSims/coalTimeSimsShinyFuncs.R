@@ -96,15 +96,16 @@ server <- function(input,output) {
     })
 
     mean.time <- reactive({
+        ## deep.coal.mean.time <- 2*input$Nanc+length(coal.dist()$cdf)
+        ## p.not.deep <- tail(coal.dist()$cdf,1)
+        ## p.deep <- 1-p.not.deep
+        ## sum(1-coal.dist()$cdf)*p.not.deep + p.deep*deep.coal.mean.time
         sum(1-coal.dist()$cdf)
     })
 
     mean.rate <- reactive({
         1/mean.time()
     })
-
-
-
 
     output$sizeHistoryPlot <- renderPlot(
         sizeHistoryPlot(

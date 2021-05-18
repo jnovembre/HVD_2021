@@ -56,11 +56,3 @@ hetPlot <- function(sims,ngens,p0,N){
 
 }
 
-if(FALSE){
-
-
-
-
-
-    
-}
