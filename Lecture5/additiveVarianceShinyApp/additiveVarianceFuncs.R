@@ -90,7 +90,7 @@ propAddPlot <- function(input,xlims,ylims,xlabel,ylabel){
 }
 
 plotAddAndDom <- function(input,xlims,ylims,xlabel,ylabel){
-    
+
     p <- input$frequency
     alpha <- input$homdiff
     d <- input$domdev
@@ -100,6 +100,7 @@ plotAddAndDom <- function(input,xlims,ylims,xlabel,ylabel){
     hets <- c(0,1,0)
     pheno <- getPheno(alpha,d)
     g <- getGenoFreqs(p)
+    pop.mean <- sum(pheno*g)
 
 
     ## fit models
@@ -143,5 +144,27 @@ plotAddAndDom <- function(input,xlims,ylims,xlabel,ylabel){
         col='purple',
         lwd=2
     )
+    if(input$onOff %% 2 == 1 ){
+        lines(
+            x=c(2*p,2*p),
+            y=c(0,pop.mean),
+            lty=2,
+            lwd=2,
+            col='darkgreen'
+        )
+        lines(
+            x=c(0,2*p),
+            y=c(pop.mean,pop.mean),
+            lty=2,
+            lwd=2,
+            col='darkgreen'
+        )
+        points(
+            x=2*p,
+            y=pop.mean,
+            pch=20,
+            col='darkgreen'
+        )
+        }
 
 }

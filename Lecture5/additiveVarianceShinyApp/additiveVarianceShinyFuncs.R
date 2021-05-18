@@ -25,7 +25,8 @@ ui <- fluidPage(
                 max = 1,
                 value = 0.5,
                 step=0.01
-            )
+            ),
+            actionButton("onOff", "Add line for population means")
         ),
         mainPanel(
             plotOutput("additivePlot"),
@@ -62,9 +63,11 @@ server <- function(input,output) {
             xlabel=xlabel(),
             ylabel=ylabel()
         )
-        
     )
-        
+
+    
+
+    
     output$add_var <- renderPrint({
         paste(
             "The additive genetic variance is: ",

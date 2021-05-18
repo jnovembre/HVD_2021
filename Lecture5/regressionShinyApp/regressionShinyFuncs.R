@@ -24,7 +24,7 @@ ui <- fluidPage(
                 label = "Sample Size:",
                 min = 1000,
                 max = 100000,
-                value = 100000,
+                value = 10000,
                 step=1000
             ),
             actionButton("onOff", "Condition on mid-Parent phenotype")
