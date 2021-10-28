@@ -21,7 +21,7 @@ propAddPlot <- function(input,xlims,ylims,xlabel,ylabel){
 
     add.vars <- getAddVar(my.x,alpha,d)
     dom.vars <- getDomVar(my.x,alpha,d)
-    
+
     tot.vars <- add.vars+dom.vars
     prop.add <- add.vars/tot.vars
 
@@ -37,8 +37,8 @@ propAddPlot <- function(input,xlims,ylims,xlabel,ylabel){
     freq.weight.tot.vars <- tot.vars/(my.x*(1-my.x))
 
     var.frac <- sum(freq.weight.add.vars)/sum(freq.weight.tot.vars)
-    
-    
+
+
     cols <- blue2red(length(tot.vars))
     plot(
         tot.vars,
@@ -87,84 +87,4 @@ propAddPlot <- function(input,xlims,ylims,xlabel,ylabel){
         pt.bg=cols[these],
         bty='n'
     )
-}
-
-plotAddAndDom <- function(input,xlims,ylims,xlabel,ylabel){
-
-    p <- input$frequency
-    alpha <- input$homdiff
-    d <- input$domdev
-
-
-    geno <- c(0,1,2)
-    hets <- c(0,1,0)
-    pheno <- getPheno(alpha,d)
-    g <- getGenoFreqs(p)
-    pop.mean <- sum(pheno*g)
-
-
-    ## fit models
-    add.only <- lm(pheno~geno,weights=g)
-    two.locus <- lm(pheno~(geno+hets),weights=g)
-
-    predict.add <- predict(add.only)
-    
-
-    plot(
-        x=geno,
-        y=pheno,
-        pch=21,
-        col='black',
-        bg='grey',
-        cex=sqrt(g/pi)*15,
-        xlim=xlims,
-        ylim=ylims,
-        bty='n',
-        xaxt='n',
-        yaxt='n',
-        xlab=xlabel,
-        ylab=ylabel
-    )
-    axis(1,at=geno)
-    axis(2,at=c(-2,-1,0,1,2))
-    abline(
-        add.only,
-        col='red',
-        lwd=2
-    )
-
-    abline(
-        two.locus$coefficients[1:2],
-        col='blue',
-        lwd=2
-    )
-    lines(
-        x=c(1,1),
-        y=c(0,d),
-        col='purple',
-        lwd=2
-    )
-    if(input$onOff %% 2 == 1 ){
-        lines(
-            x=c(2*p,2*p),
-            y=c(0,pop.mean),
-            lty=2,
-            lwd=2,
-            col='darkgreen'
-        )
-        lines(
-            x=c(0,2*p),
-            y=c(pop.mean,pop.mean),
-            lty=2,
-            lwd=2,
-            col='darkgreen'
-        )
-        points(
-            x=2*p,
-            y=pop.mean,
-            pch=20,
-            col='darkgreen'
-        )
-        }
-
 }
