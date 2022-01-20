@@ -1,7 +1,7 @@
 source('wfSimsFuncs.R')
 ui <- fluidPage(
     titlePanel("Wright-Fisher Simulations"),
-    actionButton("go", "Run simulations"),
+    actionButton("go", "Run simulations"), ## a button for rerunning the simulations
     sidebarLayout(
         sidebarPanel(
             sliderInput(
