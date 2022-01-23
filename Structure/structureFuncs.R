@@ -113,10 +113,10 @@ fstPlot <- function(fsts,mean.fsts,ngens,scaled.mig.rate){
         lwd=1.5,
         lty=1
     )
-    abline(
-        h=1/(1+scaled.mig.rate),
-        lwd=1.5,
-        lty=2
-    )
+    ## abline(
+    ##     h=1/(1+scaled.mig.rate),
+    ##     lwd=1.5,
+    ##     lty=2
+    ## )
 
 }
