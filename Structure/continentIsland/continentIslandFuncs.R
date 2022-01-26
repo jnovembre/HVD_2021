@@ -7,31 +7,12 @@ wfBinomWMig <- function(N,ngens,reps,pCont,pIsle,m=0.01){
     }
     freq.list
 }
-## het <- function(x) {
-##     tbl <- table(x)
-##     1 - sum((tbl/sum(tbl))^2)
-## }
 fst <- function(x){
     l <- length(x)
     my.fst <- numeric()
-    ## for(ll in 1:nrow(grid)){
-    ##     xt <- x[grid[ll,]]
-    ##     het <- mean(xt*(1-xt))
-    ##     xbar <- mean(xt);
-    ##     tothet <- xbar*(1-xbar)
-    ##     my.fst[ll] <- (tothet-het)/tothet
-    ## }
     xbar <- mean(x)
     meanfst <- var(x)/(xbar*(1-xbar))
-
-    ## het <- 0.5 * (x*(1-x) + p*(1-p))
-    ## xbar <- (x+p)/2
-    ## tothet <- xbar*(1-xbar)
-    ## fst <- (tothet-het)/tothet
-    ## sumtothet <- sum(tothet)
-    ## sumhets <- sum(het)
-    ## meanfst <- (sumtothet-sumhets)/sumtothet
-    list(my.fst,meanfst)
+    meanfst
 }
 freqPlot <- function(sims,pCont,ngens=length(my.sims)){
     rando <- sample(1:length(sims[[1]]),1)
@@ -67,11 +48,9 @@ freqPlot <- function(sims,pCont,ngens=length(my.sims)){
 }
 
 
-fstPlot <- function(fsts,mean.fsts,ngens,scaled.mig.rate){
+fstPlot <- function(mean.fsts,ngens,scaled.mig.rate){
 
-    max.fst <- ceiling(4*max(c(unlist(fsts),mean.fsts)))/4
-    tmp.ymax <- min(max.fst*1.05,1)
-    my.ymax <- ifelse(is.nan(tmp.ymax),1,tmp.ymax)
+    my.ymax <- ifelse(max(mean.fsts)<0.3,1/2,1)
 
     plot(
         NA,
@@ -83,14 +62,6 @@ fstPlot <- function(fsts,mean.fsts,ngens,scaled.mig.rate){
         cex.lab=1.4,
         cex.axis=1.2
     )
-    ## matplot(
-    ##     fsts,
-    ##     type='l',
-    ##     lty=1,
-    ##     lwd=3/4,
-    ##     col=adjustcolor('black',0.01),
-    ##     add=T
-    ## )
     lines(
         mean.fsts,
         lwd=2,

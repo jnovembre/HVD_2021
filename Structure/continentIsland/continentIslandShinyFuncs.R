@@ -5,19 +5,19 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             sliderInput(
-                inputId = "N",
-                label = "Diploid Population Size:",
-                min = 1000,
-                max = 10000,
-                value = 1000,
-                step=10
+                inputId = "logN",
+                label = "Log_10 Diploid Population Size:",
+                min = 2,
+                max = 7,
+                value = 3,
+                step=1/10
             ),
             sliderInput(
                 inputId = "ngens",
                 label = "Number of Generations:",
                 min = 10,
-                max = 10000,
-                value = 4000,
+                max = 100000,
+                value = 10000,
                 step=10
             ),
             sliderInput(
@@ -45,12 +45,12 @@ ui <- fluidPage(
                 step=0.005
             ),
             sliderInput(
-                inputId = "mig",
+                inputId = "logMig",
                 label = "Log_10 Migration Rate:",
                 min = -7,
-                max = -1,
-                value = -3 ,
-                step=1/4
+                max = -2,
+                value = -5 ,
+                step=1/10
             )
             ## sliderInput(
             ##     inputId = "mut",
@@ -68,41 +68,29 @@ ui <- fluidPage(
     )
 )
 server <- function(input,output) {
-
     mig.rate <- eventReactive(input$go,{
-        10^input$mig
+        10^input$logMig
     })
-    ## mut.rate <- eventReactive(input$go,{
-    ##     10^input$mig
-    ## })
+    pop.size <- eventReactive(input$go,{
+        10^input$logN
+    })
     sims <- eventReactive(input$go,{
-        wfBinomWMig(N=input$N, ngens=input$ngens, reps=input$reps, pCont=input$pCont,pIsle=input$pIsle,m=mig.rate())
+        wfBinomWMig(N=pop.size(), ngens=input$ngens, reps=input$reps, pCont=input$pCont,pIsle=input$pIsle,m=mig.rate())
+    })
+    ngens <- eventReactive(input$go,{
+        input$ngens
+    })
+    pCont <- eventReactive(input$go,{
+        input$pCont
     })
     my.fsts <- eventReactive(input$go,{
         fst.list <- list()
         mean.fsts <- numeric()
         for(i in 1:length(sims())){
-            tmp <- fst(sims()[[i]])
-            fst.list[[i]] <- tmp[[1]]
-            mean.fsts[i] <- tmp[[2]]
+            mean.fsts[i] <- fst(sims()[[i]])
         }
-        list(
-            do.call(rbind,fst.list),
-            mean.fsts
-        )
+        mean.fsts
     })
-
-
-    ngens <- eventReactive(input$go,{
-        input$ngens
-    })
-    Ne <- eventReactive(input$go,{
-        input$N
-    })
-    pCont <- eventReactive(input$go,{
-        input$pCont
-    })
-
     output$freqPlot <- renderPlot(
         freqPlot(
             sims(),
@@ -110,24 +98,11 @@ server <- function(input,output) {
             ngens()
         )
     )
-
     output$fstPlot <- renderPlot(
         fstPlot(
-            my.fsts()[[1]],
-            my.fsts()[[2]],
+            my.fsts(),
             ngens(),
-            4*Ne()*mig.rate()
+            4*pop.size()*mig.rate()
         )
     )
-
-
-    ## output$hetPlot <- renderPlot(
-    ##     hetPlot(
-    ##         sims(),
-    ##         ngens(),
-    ##         p0(),
-    ##         Ne()
-    ##     )
-    ## )
-
 }
