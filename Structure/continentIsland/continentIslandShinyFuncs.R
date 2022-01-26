@@ -82,7 +82,7 @@ server <- function(input,output) {
         fst.list <- list()
         mean.fsts <- numeric()
         for(i in 1:length(sims())){
-            tmp <- fst(sims()[[i]],input$pCont)
+            tmp <- fst(sims()[[i]])
             fst.list[[i]] <- tmp[[1]]
             mean.fsts[i] <- tmp[[2]]
         }
