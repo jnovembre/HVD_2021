@@ -102,7 +102,8 @@ server <- function(input,output) {
         fstPlot(
             my.fsts(),
             ngens(),
-            4*pop.size()*mig.rate()
+            4*pop.size()*mig.rate(),
+            pop.size()
         )
     )
 }

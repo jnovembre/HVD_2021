@@ -48,7 +48,7 @@ freqPlot <- function(sims,pCont,ngens=length(my.sims)){
 }
 
 
-fstPlot <- function(mean.fsts,ngens,scaled.mig.rate){
+fstPlot <- function(mean.fsts,ngens,scaled.mig.rate,N){
     my.ymax <- ifelse(max(mean.fsts)<0.3,1/2,1)
     plot(
         NA,
@@ -71,10 +71,28 @@ fstPlot <- function(mean.fsts,ngens,scaled.mig.rate){
         lwd=1.5,
         lty=2
     )
+    lines(
+        1-exp(-(1:ngens)/(2*N)),
+        col='red',
+        lwd=2,
+        lty=2
+    )
     text(
         x=0.8*ngens,
         y=0.2*my.ymax,
         labels=paste('4Nm = ',scaled.mig.rate,sep=''),
         cex=4
+    )
+    legend(
+        x='topleft',
+        legend=c(
+            'Migration-drift equilibrum: Fst=1/(1+4Nm)',
+            'Drift alone expectation: Fst=1-e^{-t/2N}',
+            'Observed Fst'
+        ),
+        col=c('black','red','blue'),
+        lty=c(2,2,1),
+        lwd=rep(1.5,2,2),
+        bg='white'
     )
 }
