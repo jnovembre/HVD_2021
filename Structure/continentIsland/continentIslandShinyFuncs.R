@@ -33,7 +33,7 @@ ui <- fluidPage(
                 label = "Continental Allele Frequency:",
                 min = 1/200,
                 max = 199/200,
-                value = 0.3,
+                value = 0.7,
                 step=0.005
             ),
             sliderInput(

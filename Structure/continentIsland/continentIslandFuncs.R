@@ -49,9 +49,7 @@ freqPlot <- function(sims,pCont,ngens=length(my.sims)){
 
 
 fstPlot <- function(mean.fsts,ngens,scaled.mig.rate){
-
     my.ymax <- ifelse(max(mean.fsts)<0.3,1/2,1)
-
     plot(
         NA,
         type='n',
@@ -73,5 +71,10 @@ fstPlot <- function(mean.fsts,ngens,scaled.mig.rate){
         lwd=1.5,
         lty=2
     )
-
+    text(
+        x=0.8*ngens,
+        y=0.2*my.ymax,
+        labels=paste('4Nm = ',scaled.mig.rate,sep=''),
+        cex=4
+    )
 }
